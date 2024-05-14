@@ -5,7 +5,7 @@ use core::f32::consts::LOG2_10;
 
 use rayon::prelude::*;
 
-use lab4::*;
+use mandelbrot::*;
 
 const WIDTH: u16 = 500;
 const HEIGHT: u16 = 500;
