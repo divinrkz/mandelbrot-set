@@ -5,7 +5,7 @@
 Source: Wikipedia.
 
 ### Run the code.
-Using the --release flag for compiler optimizations
+Using the `--release` flag for compiler optimizations
 ```rust
 cargo run --release
 ```
