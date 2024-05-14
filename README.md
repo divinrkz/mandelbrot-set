@@ -4,6 +4,10 @@
 
 Source: Wikipedia.
 
+### Key features.
+1. Parallelism and Multithreading.
+2. Operator overloading.
+
 ### Run the code.
 Using the `--release` flag for compiler optimizations
 ```rust
