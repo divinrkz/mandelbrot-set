@@ -45,7 +45,7 @@ fn main() {
     println!("Collecting frames...");
     let frames = frames_native();
     // let frames = frames_rayon();
-// 
+
     animation.add_frames(frames);
     animation
         .write_animation()
