@@ -103,17 +103,16 @@ pub fn frames_rayon() -> Vec<Frame> {
 pub fn calc_pixel((x, y): (f32, f32)) -> Pixel {
     let c = Complex::new(x, y);
     let mut z = Complex::new(0.0, 0.0);
-    let max_iter = 255usize;
     let mut iters = 0;
 
-    while z.norm() < 8192.0 && iters < max_iter {
+    while z.norm() < 8192.0 && iters < MAX_ITER {
         z = z * z + c;
         iters += 1;
     }
-    if iters < max_iter {
+    if iters < MAX_ITER {
         let log_zn = (z.norm().log2() / 2.0).log2() / LOG2_10; // log_2(log_2(norm(z)/2))
         let nu = log_zn;
-        let intensity = (iters as f32 + 1.0 - nu) / max_iter as f32;
+        let intensity = (iters as f32 + 1.0 - nu) / MAX_ITER as f32;
         let r = intensity.powi(2);
         let g = intensity;
         let b = intensity.sqrt();
