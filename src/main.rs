@@ -1,7 +1,7 @@
+use core::f32::consts::LOG2_10;
 use std::ops::{Add, Mul};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use core::f32::consts::LOG2_10;
 
 use rayon::prelude::*;
 
@@ -54,45 +54,45 @@ fn main() {
 
 /// Parallel frame builder that only uses Rust threads and synchronization primitives.
 pub fn frames_native() -> Vec<Frame> {
-    let keyframes: &[Keyframe; 3] = &KEYFRAMES; 
-    let interpolated_keyframes: Vec<Keyframe> = get_interpolated_frames(keyframes);
+    let keyframes = &KEYFRAMES;
+    let interpolated_frames = get_interpolated_frames(keyframes);
 
-    let frames: Vec<Frame> = interpolated_keyframes.iter()
+    let frames: Vec<Frame> = interpolated_frames
+        .iter()
         .map(|_| Frame::empty())
         .collect::<Vec<Frame>>();
 
-    let frames_arc: Arc<Mutex<Vec<Frame>>> = Arc::new(Mutex::new(frames));
+    let frames_arc = Arc::new(Mutex::new(frames));
 
-    let mut handles: Vec<thread::JoinHandle<()>> = vec![];
+    let mut handles = vec![];
 
-    for (index, keyframe) in interpolated_keyframes.iter().enumerate() {
+    for (index, keyframe) in interpolated_frames.iter().enumerate() {
         let frames_clone = Arc::clone(&frames_arc);
-        let keyframe = *keyframe;  // Assume Keyframe is Clone and relatively inexpensive to clone
-    
+        let keyframe = *keyframe;
+
         let handle = thread::spawn(move || {
             let pixel_data = draw_frame(WIDTH as u32, HEIGHT as u32, keyframe);
-            let frame = Frame::from_pixels(WIDTH as u16, HEIGHT as u16, pixel_data);
-    
+            let frame = Frame::from_pixels(WIDTH, HEIGHT, pixel_data);
+
             let mut frames = frames_clone.lock().unwrap();
             frames[index] = frame;
         });
         handles.push(handle);
     }
 
-    
-
     for handle in handles {
-        handle.join().expect("Thread panicked");
+        handle.join().expect("Thread panick.");
     }
     Arc::try_unwrap(frames_arc).unwrap().into_inner().unwrap()
 }
 
 /// Parallel frame builder that uses Rayon.
 pub fn frames_rayon() -> Vec<Frame> {
-    let keyframes: &[Keyframe; 3] = &KEYFRAMES; 
-    let interpolated_keyframes: Vec<Keyframe> = get_interpolated_frames(keyframes);
+    let keyframes = &KEYFRAMES;
+    let interpolated_frames: Vec<Keyframe> = get_interpolated_frames(keyframes);
 
-    interpolated_keyframes.par_iter()
+    interpolated_frames
+        .par_iter()
         .map(|keyframe| {
             let pixel_data = draw_frame(WIDTH as u32, HEIGHT as u32, *keyframe);
             Frame::from_pixels(WIDTH, HEIGHT, pixel_data)
@@ -110,7 +110,7 @@ pub fn calc_pixel((x, y): (f32, f32)) -> Pixel {
         iters += 1;
     }
     if iters < MAX_ITER {
-        let log_zn = (z.norm().log2() / 2.0).log2() / LOG2_10; // log_2(log_2(norm(z)/2))
+        let log_zn = (z.norm().log2() / 2.0).log2() / LOG2_10;
         let nu = log_zn;
         let intensity = (iters as f32 + 1.0 - nu) / MAX_ITER as f32;
         let r = intensity.powi(2);
@@ -120,7 +120,7 @@ pub fn calc_pixel((x, y): (f32, f32)) -> Pixel {
     } else {
         Pixel::from_rgb(0.0, 0.0, 0.0)
     }
- }
+}
 
 pub fn draw_frame(width: u32, height: u32, keyframe: Keyframe) -> Vec<Pixel> {
     let mut pixels = Vec::with_capacity((width * height) as usize);
@@ -128,9 +128,7 @@ pub fn draw_frame(width: u32, height: u32, keyframe: Keyframe) -> Vec<Pixel> {
     for y in 0..height {
         for x in 0..width {
             let (cx, cy) = keyframe.get_coordinate(x, y, width, height);
-
             let pixel = calc_pixel((cx, cy));
-
             pixels.push(pixel);
         }
     }
@@ -159,7 +157,7 @@ impl Add for Complex {
     fn add(self, rhs: Self) -> Self {
         Complex {
             x: self.x + rhs.x,
-            y: self.y + rhs.y
+            y: self.y + rhs.y,
         }
     }
 }
@@ -174,4 +172,3 @@ impl Mul for Complex {
         }
     }
 }
-
